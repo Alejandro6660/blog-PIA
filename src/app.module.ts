@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DataSourceConfig } from './config/data.source';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DocumentService } from './services/documents/document.service';
 import { DocumentModule } from './modules/documents/document.module';
-import { DocumentController } from './controllers/documents/document.controller';
-import { LogDocumentService } from './services/documents/log-document.service';
+import { PostModule } from './modules/posts/post.module';
+import { UserModule } from './modules/users/user.module';
+import { RolUserModule } from './modules/rol-users/rol-user.module';
+import { TagModule } from './modules/tags/tag.module';
+import { ComentModule } from './modules/coments/coment.module';
 
 @Module({
   imports: [
@@ -14,9 +14,12 @@ import { LogDocumentService } from './services/documents/log-document.service';
       isGlobal: true,
     }),
     DocumentModule,
+    PostModule,
+    UserModule,
+    RolUserModule,
+    TagModule,
+    ComentModule,
     /*     TypeOrmModule.forRoot({ ...DataSourceConfig }), */
   ],
-  providers: [DocumentService, LogDocumentService],
-  controllers: [DocumentController],
 })
 export class AppModule {}
