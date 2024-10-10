@@ -97,6 +97,51 @@ export class WinstonLoggerAdapter {
         }),
       ],
     });
+
+    this.mediumoLogger = winston.createLogger({
+      levels,
+      transports: [
+        new winston.transports.Console({
+          level: 'medium',
+          format: formatConsole,
+        }),
+        new winston.transports.File({
+          filename: this.logMediumPath,
+          level: 'medium',
+          format,
+        }),
+      ],
+    });
+
+    this.highLogger = winston.createLogger({
+      levels,
+      transports: [
+        new winston.transports.Console({
+          level: 'high',
+          format: formatConsole,
+        }),
+        new winston.transports.File({
+          filename: this.logHighPath,
+          level: 'high',
+          format,
+        }),
+      ],
+    });
+
+    this.fatalLogger = winston.createLogger({
+      levels,
+      transports: [
+        new winston.transports.Console({
+          level: 'fatal',
+          format: formatConsole,
+        }),
+        new winston.transports.File({
+          filename: this.logFatalPath,
+          level: 'fatal',
+          format,
+        }),
+      ],
+    });
   }
 
   info(logModel: LogModel) {
@@ -105,5 +150,17 @@ export class WinstonLoggerAdapter {
 
   low(logModel: LogModel) {
     this.lowLogger.log(logModel.level, logModel.message);
+  }
+
+  medium(logModel: LogModel) {
+    this.mediumoLogger.log(logModel.level, logModel.message);
+  }
+
+  high(logModel: LogModel) {
+    this.highLogger.log(logModel.level, logModel.message);
+  }
+
+  fatal(logModel: LogModel) {
+    this.fatalLogger.log(logModel.level, logModel.message);
   }
 }
