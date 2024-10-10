@@ -5,7 +5,11 @@ import { warn } from 'console';
 import { LogModel } from 'src/models/logs/log.model';
 
 export class WinstonLoggerAdapter {
-  private logger: winston.Logger;
+  private infoLogger: winston.Logger;
+  private lowLogger: winston.Logger;
+  private mediumoLogger: winston.Logger;
+  private highLogger: winston.Logger;
+  private fatalLogger: winston.Logger;
 
   private readonly logPath = envs.PATHLOG;
   private readonly logLowPath = `${envs.PATHLOG}/logs-low.log`;
@@ -41,67 +45,65 @@ export class WinstonLoggerAdapter {
       medium: 1,
       high: 2,
       fatal: 3,
+      info: 4,
     };
 
     winston.addColors({
-      low: 'blue',
-      medium: 'yellow',
-      high: 'orange',
-      fatal: 'red',
+      low: 'bold  blue',
+      medium: 'bold  yellow',
+      high: 'bold orange',
+      fatal: 'bold  red',
+      info: 'bold green',
     });
 
-    // Crear el logger con niveles
-    this.logger = winston.createLogger({
-      level: 'low',
-      format: winston.format.combine(
-        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.printf(({ timestamp, level, message }) => {
-          return `${timestamp} [${level}]: ${message}`;
-        }),
-      ),
+    const format = winston.format.combine(
+      winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      winston.format.printf(({ timestamp, level, message }) => {
+        return `[${level.toLocaleUpperCase()}]: {message: ${message}, date: ${timestamp}}`;
+      }),
+    );
+
+    const formatConsole = winston.format.combine(
+      format,
+      winston.format.colorize(),
+    );
+
+    this.infoLogger = winston.createLogger({
+      levels,
       transports: [
         new winston.transports.Console({
-          level: 'fatal', // Asegúrate de que este nivel esté configurado
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple(),
-          ),
+          level: 'info',
+          format: formatConsole,
+        }),
+        new winston.transports.File({
+          filename: this.logLowPath,
+          level: 'info',
+          format,
+        }),
+      ],
+    });
+
+    this.lowLogger = winston.createLogger({
+      levels,
+      transports: [
+        new winston.transports.Console({
+          level: 'low',
+          format: formatConsole,
         }),
         new winston.transports.File({
           filename: this.logLowPath,
           level: 'low',
-          format: winston.format.printf(({ timestamp, level, message }) => {
-            return `[${level}]: ${message}  {timestamp: ${timestamp}}`;
-          }),
-        }),
-
-        new winston.transports.File({
-          filename: this.logMediumPath,
-          level: 'medium',
-          format: winston.format.printf(({ timestamp, level, message }) => {
-            return `[${level}]: ${message}  {timestamp: ${timestamp}}`;
-          }),
-        }),
-
-        new winston.transports.File({
-          filename: this.logHighPath,
-          level: 'high',
-          format: winston.format.printf(({ timestamp, level, message }) => {
-            return `[${level}]: ${message}  {timestamp: ${timestamp}}`;
-          }),
-        }),
-        new winston.transports.File({
-          filename: this.logFatalPath,
-          level: 'fatal',
-          format: winston.format.printf(({ timestamp, level, message }) => {
-            return `[${level}]: ${message}  {timestamp: ${timestamp}}`;
-          }),
+          format,
         }),
       ],
     });
   }
 
-  log(logModel: LogModel) {
-    this.logger.log(logModel.level, logModel.message);
+  info(logModel: LogModel) {
+    this.infoLogger.log(logModel.level, logModel.message);
+  }
+
+  low(logModel: LogModel) {
+    this.lowLogger.log(logModel.level, logModel.message);
   }
 }

@@ -20,8 +20,8 @@ async function bootstrap() {
 
   await app.listen(PORT);
 
-  const log = new LogModel(`app running in port ${PORT}`, LogSeverity.FATAL);
+  const log = new LogModel(`app running in port ${PORT}`, LogSeverity.INFO);
 
-  winston.log(log);
+  winston.info(log);
 }
 bootstrap();
