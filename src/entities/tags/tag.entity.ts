@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/base.entity';
+import { BaseEntity } from '../../common/base.entity';
 import { ITag } from 'src/interfaces/tags/tag.interface';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { PostTagEntity } from './post.tag.entity';

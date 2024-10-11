@@ -1,7 +1,7 @@
-import { BaseEntity } from 'src/common/base.entity';
+import { BaseEntity } from '../../common/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { iconType } from 'src/enums/user/icon.enum';
+import { iconType } from '../../enums/user/icon.enum';
 
 @Entity({ name: 'link' })
 export class LinkEntity extends BaseEntity {

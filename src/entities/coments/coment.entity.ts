@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/base.entity';
+import { BaseEntity } from '../../common/base.entity';
 import { IComent } from 'src/interfaces/coments/coment.interface';
 import { PostEntity } from '../posts/post.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';

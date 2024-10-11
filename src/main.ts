@@ -6,11 +6,20 @@ import { WinstonLoggerAdapter } from './adapters/winston.adapter';
 import { LogModel } from './models/logs/log.model';
 import { LogSeverity } from './enums/logs/log.enum';
 import { envs } from './config/env.config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const winston = new WinstonLoggerAdapter();
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   const PORT = envs.PORT;
 

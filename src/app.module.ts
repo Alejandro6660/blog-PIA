@@ -6,7 +6,8 @@ import { UserModule } from './modules/users/user.module';
 import { RolUserModule } from './modules/rol-users/rol-user.module';
 import { TagModule } from './modules/tags/tag.module';
 import { ComentModule } from './modules/coments/coment.module';
-import { DocumentService } from './services/documents/document.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSourceConfig } from './config/data.source';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { DocumentService } from './services/documents/document.service';
     RolUserModule,
     TagModule,
     ComentModule,
-    /*     TypeOrmModule.forRoot({ ...DataSourceConfig }), */
+    TypeOrmModule.forRoot({ ...DataSourceConfig }),
   ],
 })
 export class AppModule {}

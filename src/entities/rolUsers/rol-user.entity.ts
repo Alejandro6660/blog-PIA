@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/base.entity';
+import { BaseEntity } from '../../common/base.entity';
 import { IRolUser } from 'src/interfaces/rolUsers/rol-user.interface';
 import { Column, Entity } from 'typeorm';
 

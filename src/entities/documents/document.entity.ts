@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from '../users/user.entity';
-import { Typedocument } from 'src/enums/document/type.document.enum';
-import { DocumentExtension } from 'src/enums/document/extnesion.document.enum';
-import { BaseEntity } from 'src/common/base.entity';
+import { Typedocument } from '../../enums/document/type.document.enum';
+import { DocumentExtension } from '../../enums/document/extnesion.document.enum';
+import { BaseEntity } from '../../common/base.entity';
 import { IDocument } from 'src/interfaces/documents/document.interface';
 
 @Entity({ name: 'document' })
