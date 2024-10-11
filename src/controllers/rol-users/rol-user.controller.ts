@@ -18,12 +18,14 @@ import { LogModel } from 'src/models/logs/log.model';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { RolUserService } from 'src/services/rol-users/rol-user.service';
+
 @Controller('rolUser')
 export class RolUserController {
   constructor(
     private readonly rolUserService: RolUserService,
     private logger: WinstonLoggerAdapter,
   ) {}
+
   private handleError(error: unknown) {
     if (error instanceof customError) {
       let log: LogModel;
@@ -83,4 +85,12 @@ export class RolUserController {
       this.handleError(error);
     }
   }
+
+  /*   @Get()
+  async getAll(): Promise<RolUserModel>[] {
+    try {
+    } catch (error) {
+      this.handleError(error);
+    }
+  } */
 }

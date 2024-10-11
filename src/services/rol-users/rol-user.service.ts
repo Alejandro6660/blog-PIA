@@ -12,9 +12,8 @@ export class RolUserService {
   constructor(
     @InjectRepository(RolUserEntity)
     private readonly rolUserRepository: Repository<RolUserEntity>,
-    protected readonly General: GeneralService<RolUserEntity>,
   ) {}
-  //? #region add RolUser
+  // #region add RolUser
   async add(body: CreateRolUserModel): Promise<RolUserModel> {
     try {
       const rolUserCreated = await this.rolUserRepository.save(body);
@@ -29,9 +28,11 @@ export class RolUserService {
     }
   }
 
+  //#endregion
+
   async getById(id: string): Promise<RolUserModel> {
     try {
-      const roluser = await this.General.getById(this.rolUserRepository, id);
+      const roluser = await GeneralService.getById(this.rolUserRepository, id);
       if (!roluser) throw customError.notFound(`Rol not found by id ${id}`);
       const [error, rolUserModel] = await RolUserModel.create(roluser);
       if (error) throw customError.badRequest(error);
@@ -40,5 +41,4 @@ export class RolUserService {
       throw customError.internalServer(`${error}`);
     }
   }
-  //#endregion
 }

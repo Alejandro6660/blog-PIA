@@ -8,11 +8,7 @@ import { RolUserService } from 'src/services/rol-users/rol-user.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([RolUserEntity])],
-  providers: [
-    RolUserService,
-    WinstonLoggerAdapter,
-    GeneralService<RolUserEntity>,
-  ],
+  providers: [RolUserService, WinstonLoggerAdapter],
   controllers: [RolUserController],
 })
 export class RolUserModule {}
