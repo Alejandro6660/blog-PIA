@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   InternalServerErrorException,
@@ -70,7 +71,7 @@ export class RolUserController {
   @Post()
   async createUser(@Body() value: CreateRolUserModel): Promise<RolUserModel> {
     try {
-      const rolUser = await this.rolUserService.add(value);
+      const rolUser = await this.rolUserService.create(value);
       return rolUser;
     } catch (error) {
       this.handleError(error);
@@ -110,6 +111,16 @@ export class RolUserController {
   ): Promise<RolUserModel> {
     try {
       const rolUser = this.rolUserService.update(id, body);
+      return rolUser;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string): Promise<RolUserModel> {
+    try {
+      const rolUser = this.rolUserService.delete(id);
       return rolUser;
     } catch (error) {
       this.handleError(error);

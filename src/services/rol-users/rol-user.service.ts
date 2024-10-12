@@ -8,15 +8,18 @@ import { customError } from 'src/config/errors.config';
 import { GeneralService } from '../General/general.service';
 import { RolUserModule } from '../../modules/rol-users/rol-user.module';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
+import { IGeneral } from '../../interfaces/General/IGeneral.interface';
 
 @Injectable()
-export class RolUserService {
+export class RolUserService
+  implements IGeneral<CreateRolUserModel, RolUserModel, UpdateRolUserModel>
+{
   constructor(
     @InjectRepository(RolUserEntity)
     private readonly rolUserRepository: Repository<RolUserEntity>,
   ) {}
   // #region add RolUser
-  async add(body: CreateRolUserModel): Promise<RolUserModel> {
+  async create(body: CreateRolUserModel): Promise<RolUserModel> {
     try {
       const rolUserCreated = await this.rolUserRepository.create({ ...body });
       await this.rolUserRepository.save(rolUserCreated);
@@ -81,6 +84,7 @@ export class RolUserService {
   }
   //#endregion
 
+  //#region update RolUser
   async update(id: string, data: UpdateRolUserModel): Promise<RolUserModel> {
     try {
       const rolUser = await GeneralService.getById(this.rolUserRepository, id);
@@ -90,6 +94,20 @@ export class RolUserService {
         ...data,
       });
       const [error, rolUserModel] = await RolUserModel.create({ ...rol });
+      if (error) throw customError.badRequest(error);
+      return rolUserModel;
+    } catch (error) {
+      throw customError.internalServer(`${error}`);
+    }
+  }
+  //#endregion
+
+  async delete(id: string): Promise<RolUserModel> {
+    try {
+      await this.rolUserRepository.update(id, { isDelated: true });
+      const obj = await GeneralService.getById(this.rolUserRepository, id);
+      if (!obj) throw customError.badRequest('error');
+      const [error, rolUserModel] = await RolUserModel.create(obj);
       if (error) throw customError.badRequest(error);
       return rolUserModel;
     } catch (error) {
