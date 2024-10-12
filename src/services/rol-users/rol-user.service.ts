@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { customError } from 'src/config/errors.config';
 import { GeneralService } from '../General/general.service';
 import { RolUserModule } from '../../modules/rol-users/rol-user.module';
+import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 
 @Injectable()
 export class RolUserService {
@@ -17,7 +18,8 @@ export class RolUserService {
   // #region add RolUser
   async add(body: CreateRolUserModel): Promise<RolUserModel> {
     try {
-      const rolUserCreated = await this.rolUserRepository.save(body);
+      const rolUserCreated = await this.rolUserRepository.create({ ...body });
+      await this.rolUserRepository.save(rolUserCreated);
       const [error, rolUserModel] = RolUserModel.create({ ...rolUserCreated });
       if (error) {
         throw customError.badRequest(error);
@@ -44,6 +46,8 @@ export class RolUserService {
     }
   }
   //#endregion
+
+  //#region getAll RolUsers
   async getAll(): Promise<RolUserModel[]> {
     try {
       let rols: RolUserModel[] = []; // Array de instancias de RolUserModel
@@ -71,6 +75,23 @@ export class RolUserService {
       }
 
       return rols; // Retorna un array de instancias de RolUserModel
+    } catch (error) {
+      throw customError.internalServer(`${error}`);
+    }
+  }
+  //#endregion
+
+  async update(id: string, data: UpdateRolUserModel): Promise<RolUserModel> {
+    try {
+      const rolUser = await GeneralService.getById(this.rolUserRepository, id);
+      if (!rolUser) throw customError.notFound(`Rol not found by id ${id}`);
+      const rol = await this.rolUserRepository.save({
+        ...rolUser,
+        ...data,
+      });
+      const [error, rolUserModel] = await RolUserModel.create({ ...rol });
+      if (error) throw customError.badRequest(error);
+      return rolUserModel;
     } catch (error) {
       throw customError.internalServer(`${error}`);
     }

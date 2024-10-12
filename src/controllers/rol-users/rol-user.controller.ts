@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   UnauthorizedException,
 } from '@nestjs/common';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
@@ -17,6 +18,7 @@ import { LogSeverity } from 'src/enums/logs/log.enum';
 import { LogModel } from 'src/models/logs/log.model';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
+import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { RolUserService } from 'src/services/rol-users/rol-user.service';
 
 @Controller('rolUser')
@@ -96,6 +98,19 @@ export class RolUserController {
       }
 
       return rols; // Retorna el array de roles
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() body: UpdateRolUserModel,
+  ): Promise<RolUserModel> {
+    try {
+      const rolUser = this.rolUserService.update(id, body);
+      return rolUser;
     } catch (error) {
       this.handleError(error);
     }
