@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 import { CORS } from './middlewares/cors.middleware';
 import { WinstonLoggerAdapter } from './adapters/winston.adapter';
 import { LogModel } from './models/logs/log.model';

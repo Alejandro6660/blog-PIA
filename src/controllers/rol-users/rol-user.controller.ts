@@ -86,11 +86,18 @@ export class RolUserController {
     }
   }
 
-  /*   @Get()
-  async getAll(): Promise<RolUserModel>[] {
+  @Get()
+  async getAll(): Promise<RolUserModel[]> {
     try {
+      const rols = await this.rolUserService.getAll();
+
+      if (!rols || rols.length === 0) {
+        throw new InternalServerErrorException('No exists.');
+      }
+
+      return rols; // Retorna el array de roles
     } catch (error) {
       this.handleError(error);
     }
-  } */
+  }
 }
