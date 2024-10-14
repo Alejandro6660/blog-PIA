@@ -8,9 +8,12 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UnauthorizedException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
 import { customError } from 'src/config/errors.config';
@@ -79,7 +82,7 @@ export class RolUserController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<RolUserModel> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<RolUserModel> {
     try {
       const rolUser = await this.rolUserService.getById(id);
       if (!rolUser) throw new InternalServerErrorException('Error');
@@ -106,7 +109,7 @@ export class RolUserController {
 
   @Put(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateRolUserModel,
   ): Promise<RolUserModel> {
     try {
@@ -118,7 +121,7 @@ export class RolUserController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<RolUserModel> {
+  async delete(@Param('id', ParseUUIDPipe) id: string): Promise<RolUserModel> {
     try {
       const rolUser = this.rolUserService.delete(id);
       return rolUser;

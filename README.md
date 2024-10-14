@@ -38,51 +38,98 @@ Características principales:
 
   [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Project setup
+# Guia de Configuracion
 
-#### Descargas necesarias
+#### Descargas Necesarias
 
 1.  Editor preferido ( Recomendacion: <a href="https://code.visualstudio.com/Download" target="_blank">Visual Studio Code</a>)
 2.  <a href="https://www.postman.com/downloads/" target="_blank">Postman</a>
 3.  <a href="https://www.docker.com/products/docker-desktop/#:~:text=Docker%20Desktop%20is%20a%20secure%20and%20easy-to-use%20tool" target="_blank">Docker Desktop</a>
 4.  <a href="https://nodejs.org/en/download/package-manager" target="_blank">NodeJS</a>
+5.  <a href="https://docs.nestjs.com/cli/overview">Nest CLI</a>
+6.  <a href="https://tableplus.com/download">Table plus</a>
+7.  <a href="https://import.cdn.thinkific.com/643563/Hy5tCoWRxCY0Pa1wZL2A_nest-cheatsheet.pdf">Guia de nest</a>
+
+#### Pasos para configurar el proyecto
+
+1. **Clonar repositorio.**
+
+Clona el repositorio del proyecto usando el siguiente comando en tu terminal:
+
+```bash
+$ git clone <URL-del-repositorio>
+```
+
+2. **Crear archivo .env**
+
+En la raiz del proyecto crear un archivo .env y poner la siguiente configuracion:
+
+```
+PORT=
+
+#Config database
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+
+
+#File System
+DIR_LOG=
+```
+
+3. **Instalar dependencias.**
 
 ```bash
 $ npm install
 ```
 
-## Compile and run the project
+4. **Crear carpeta.**
+
+En la raiz del proyceto crear una carpeta vacia llamada postgres.
+
+5. **Eliminar la carpeta migrations que esta dentro de src/db/.**
+
+Dentro de src/db hay una carpeta que se tendra que eliminar para posterirmente ustedes puedan hacer las migraciones correspondientes.
+
+## Correr el proyecto por pimera vez
+
+1. **Correr la imagen:**
+
+Una vez tengan ya todo lo anterior lo que tendran que hacer sera poner el siguiente comando en su terminal para asi poder correr la base de datos.
 
 ```bash
-# development
-$ npm run start
+$ docker compose up -d
+```
 
-# DEBUGGUEAR
+para poder correr correctamente la imagen tendran que tener abierto el docker descktop y luego ejecutar el comando.
+
+2. **Crear Migracion.**
+
+Posteriormente ejecutaremos el siguiente comando para poder crear las tablas en la base de datos.
+
+```bash
+$ npm run m:gen src/db/migrations/initDB
+```
+
+3. **Correr Migracion.**
+
+Antes de correr migracion hay que verificar si se crearon correctamente las tablas, para eso hay que entrar a la carpeta "db" dentro de "src" y verificar que este el archivo migrations/{numero generico}-initDB.ts, si esta el archivo correr el siguiente comando.
+
+```bash
+$ npm run m:run
+```
+
+Una vez hayamos corrido la migracion hay que verificar si las tablas se crearon correctamente en la base de datos.
+
+4. **Correr proyecto.**
+
+```bash
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
-## Generate and Run Migration
-```bash
-# generate migration
-npm run m:gen ./src/db/migrations/initDB
 
-# Run migration
-npm run m:run
-```
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
+**Estos pasos solo son para la primera vez que corramos el proyecto una vez clonado el repositorio**; Despues solo hay que correr el primer y ultimo paso.
 
 ## Support
 

@@ -1,15 +1,15 @@
 version: '3.1'
 
 services:
-  codrr_pg:
+  db:
     image: postgres:17.0
-    container_name: blog-PW
-    restart: always
+    restrat: always
+    ports:
+      - '5432:5432'
     environment:
-      POSTGRES_DB: blogDB
-      POSTGRES_USER: alejandro
-      POSTGRES_PASSWORD: secret1234
+      - POSTEGRES_PASWORD: ${DB_PASSWORD}
+      - POSTGERS_DB: ${DB_NAME}
+      - POSTGRES_USER: ${DB_USER}
+    container_name: BLOG-PIA
     volumes:
       - ./postgres:/var/lib/postgresql/data
-    ports:
-      - 5432:5432

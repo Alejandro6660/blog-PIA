@@ -8,20 +8,22 @@ import { TagModule } from './modules/tags/tag.module';
 import { ComentModule } from './modules/coments/coment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceConfig } from './config/data.source';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV}`,
+      envFilePath: `.env`,
       isGlobal: true,
     }),
+    TypeOrmModule.forRoot({ ...DataSourceConfig }),
     DocumentModule,
     PostModule,
     UserModule,
     RolUserModule,
     TagModule,
     ComentModule,
-    TypeOrmModule.forRoot({ ...DataSourceConfig }),
+    CommonModule,
   ],
 })
 export class AppModule {}

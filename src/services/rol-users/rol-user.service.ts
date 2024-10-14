@@ -65,13 +65,7 @@ export class RolUserService
       }
 
       for (const rolUser of rolUsers) {
-        const [error, rolUserModel] = RolUserModel.create({
-          id: rolUser.id,
-          name: rolUser.name,
-          description: rolUser.description,
-          level: rolUser.level,
-          createdAT: rolUser.createdAT, // Corregido 'createdAt'
-        });
+        const [error, rolUserModel] = RolUserModel.create({ ...rolUser });
 
         if (error) throw customError.badRequest(error);
         rols.push(rolUserModel); /// Añadimos cada rol al array
