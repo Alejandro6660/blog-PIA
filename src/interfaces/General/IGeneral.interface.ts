@@ -1,11 +1,11 @@
 export interface IGeneral<T, U, P> {
   create(obj: T): Promise<U>;
 
-  update(id: string, obj: P): Promise<U>;
+  update(id: bigint, obj: P): Promise<U>;
 
   getAll(): Promise<U[]>;
 
-  getById(id: string): Promise<U>;
+  getById(id: bigint): Promise<U>;
 
-  delete(id: string): Promise<U>;
+  delete(id: bigint): Promise<U>;
 }

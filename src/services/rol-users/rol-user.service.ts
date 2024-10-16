@@ -37,7 +37,7 @@ export class RolUserService
   //#endregion
 
   //#region getById RolUser
-  async getById(id: string): Promise<RolUserModel> {
+  async getById(id: bigint): Promise<RolUserModel> {
     try {
       const roluser = await GeneralService.getById(this.rolUserRepository, id);
       if (!roluser) throw customError.notFound(`Rol not found by id ${id}`);
@@ -79,7 +79,7 @@ export class RolUserService
   //#endregion
 
   //#region update RolUser
-  async update(id: string, data: UpdateRolUserModel): Promise<RolUserModel> {
+  async update(id: BigInt, data: UpdateRolUserModel): Promise<RolUserModel> {
     try {
       const rolUser = await GeneralService.getById(this.rolUserRepository, id);
       if (!rolUser) throw customError.notFound(`Rol not found by id ${id}`);
@@ -96,7 +96,7 @@ export class RolUserService
   }
   //#endregion
 
-  async delete(id: string): Promise<RolUserModel> {
+  async delete(id: bigint): Promise<RolUserModel> {
     try {
       await this.rolUserRepository.update(id, { isDelated: true });
       const obj = await GeneralService.getById(this.rolUserRepository, id);
@@ -108,4 +108,6 @@ export class RolUserService
       throw customError.internalServer(`${error}`);
     }
   }
+
+  private handleDbExeptions(error: any) {}
 }

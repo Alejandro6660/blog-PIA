@@ -1,5 +1,5 @@
 interface IRolUserModel {
-  id: string;
+  id: BigInt;
   name: string;
   description: string;
   level: number;

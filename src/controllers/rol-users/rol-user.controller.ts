@@ -8,6 +8,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Put,
@@ -82,7 +83,7 @@ export class RolUserController {
   }
 
   @Get(':id')
-  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<RolUserModel> {
+  async getById(@Param('id', ParseIntPipe) id: bigint): Promise<RolUserModel> {
     try {
       const rolUser = await this.rolUserService.getById(id);
       if (!rolUser) throw new InternalServerErrorException('Error');
@@ -109,7 +110,7 @@ export class RolUserController {
 
   @Put(':id')
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: bigint,
     @Body() body: UpdateRolUserModel,
   ): Promise<RolUserModel> {
     try {
@@ -121,7 +122,7 @@ export class RolUserController {
   }
 
   @Delete(':id')
-  async delete(@Param('id', ParseUUIDPipe) id: string): Promise<RolUserModel> {
+  async delete(@Param('id', ParseIntPipe) id: bigint): Promise<RolUserModel> {
     try {
       const rolUser = this.rolUserService.delete(id);
       return rolUser;

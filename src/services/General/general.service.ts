@@ -3,7 +3,7 @@ import { customError } from 'src/config/errors.config';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 interface Identifiable {
-  id: string;
+  id: bigint;
 }
 
 /**
@@ -13,7 +13,7 @@ export class GeneralService {
   // Definir el generic directamente en la función estática
   static async getById<T extends Identifiable>(
     repository: Repository<T>,
-    id: string,
+    id: bigint,
   ): Promise<T | null> {
     try {
       const obj = await repository.findOne({
