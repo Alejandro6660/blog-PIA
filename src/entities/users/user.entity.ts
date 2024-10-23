@@ -27,7 +27,7 @@ export class UserEntity extends BaseEntity implements IUser {
   })
   email: string;
 
-  @Column({ name: 'password', length: 30, type: 'varchar', nullable: false })
+  @Column({ name: 'password', type: 'varchar', nullable: false })
   password: string;
 
   @Column({ name: 'description', length: 500, type: 'varchar', nullable: true })
@@ -36,11 +36,11 @@ export class UserEntity extends BaseEntity implements IUser {
   @Column({ type: 'boolean', default: false })
   validateEmail: boolean;
 
-  @ManyToOne(() => DocumentEntity, { nullable: true })
+  @ManyToOne(() => DocumentEntity, { nullable: true, cascade: true })
   @JoinColumn({ name: 'imgHeroId' })
   imgHero: DocumentEntity;
 
-  @ManyToOne(() => DocumentEntity, { nullable: true })
+  @ManyToOne(() => DocumentEntity, { nullable: true, cascade: true })
   @JoinColumn({ name: 'imgAvatarId' })
   imgAvatar: DocumentEntity;
 

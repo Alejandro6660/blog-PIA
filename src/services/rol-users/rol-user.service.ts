@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { Repository } from 'typeorm';
-import { customError } from 'src/config/errors.config';
 import { GeneralService } from '../General/general.service';
-import { RolUserModule } from '../../modules/rol-users/rol-user.module';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { IGeneral } from '../../interfaces/General/IGeneral.interface';
 
@@ -25,27 +28,30 @@ export class RolUserService
       await this.rolUserRepository.save(rolUserCreated);
       const [error, rolUserModel] = RolUserModel.create({ ...rolUserCreated });
       if (error) {
-        throw customError.badRequest(error);
+        throw new BadRequestException(error);
       } else {
         return rolUserModel;
       }
     } catch (error) {
-      throw customError.internalServer(`${error}`);
+      throw new InternalServerErrorException(error);
     }
   }
 
   //#endregion
 
   //#region getById RolUser
-  async getById(id: bigint): Promise<RolUserModel> {
+  async getById(id: number): Promise<RolUserModel> {
     try {
-      const roluser = await GeneralService.getById(this.rolUserRepository, id);
-      if (!roluser) throw customError.notFound(`Rol not found by id ${id}`);
+      const roluser = await GeneralService.getById(
+        this.rolUserRepository,
+        BigInt(id),
+      );
+      if (!roluser) throw new BadRequestException(`error`);
       const [error, rolUserModel] = await RolUserModel.create(roluser);
-      if (error) throw customError.badRequest(error);
+      if (error) throw new BadRequestException(error);
       return rolUserModel;
     } catch (error) {
-      throw customError.internalServer(`${error}`);
+      throw new InternalServerErrorException(`${error}`);
     }
   }
   //#endregion
@@ -61,53 +67,57 @@ export class RolUserService
       });
 
       if (!rolUsers || rolUsers.length === 0) {
-        throw customError.notFound(`No exists`);
+        throw new BadRequestException(`error`);
       }
 
       for (const rolUser of rolUsers) {
         const [error, rolUserModel] = RolUserModel.create({ ...rolUser });
 
-        if (error) throw customError.badRequest(error);
+        if (error) throw new BadRequestException(error);
         rols.push(rolUserModel); /// Añadimos cada rol al array
       }
 
       return rols; // Retorna un array de instancias de RolUserModel
     } catch (error) {
-      throw customError.internalServer(`${error}`);
+      throw new InternalServerErrorException(`${error}`);
     }
   }
   //#endregion
 
   //#region update RolUser
-  async update(id: BigInt, data: UpdateRolUserModel): Promise<RolUserModel> {
+  async update(id: number, data: UpdateRolUserModel): Promise<RolUserModel> {
     try {
-      const rolUser = await GeneralService.getById(this.rolUserRepository, id);
-      if (!rolUser) throw customError.notFound(`Rol not found by id ${id}`);
+      const rolUser = await GeneralService.getById(
+        this.rolUserRepository,
+        BigInt(id),
+      );
+      if (!rolUser) throw new NotFoundException(`Rol not found by id ${id}`);
       const rol = await this.rolUserRepository.save({
         ...rolUser,
         ...data,
       });
       const [error, rolUserModel] = await RolUserModel.create({ ...rol });
-      if (error) throw customError.badRequest(error);
+      if (error) throw new BadRequestException(error);
       return rolUserModel;
     } catch (error) {
-      throw customError.internalServer(`${error}`);
+      throw new InternalServerErrorException(`${error}`);
     }
   }
   //#endregion
 
-  async delete(id: bigint): Promise<RolUserModel> {
+  async delete(id: number): Promise<RolUserModel> {
     try {
       await this.rolUserRepository.update(id, { isDelated: true });
-      const obj = await GeneralService.getById(this.rolUserRepository, id);
-      if (!obj) throw customError.badRequest('error');
+      const obj = await GeneralService.getById(
+        this.rolUserRepository,
+        BigInt(id),
+      );
+      if (!obj) throw new BadRequestException(`Error`);
       const [error, rolUserModel] = await RolUserModel.create(obj);
-      if (error) throw customError.badRequest(error);
+      if (error) throw new BadRequestException(error);
       return rolUserModel;
     } catch (error) {
-      throw customError.internalServer(`${error}`);
+      throw new InternalServerErrorException(`${error}`);
     }
   }
-
-  private handleDbExeptions(error: any) {}
 }

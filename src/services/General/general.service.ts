@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { customError } from 'src/config/errors.config';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 interface Identifiable {
