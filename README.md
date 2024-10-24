@@ -77,6 +77,9 @@ DB_NAME=
 
 #File System
 DIR_LOG=
+
+#secret jwt
+JWT_SECRET=
 ```
 
 3. **Instalar dependencias.**
