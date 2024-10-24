@@ -1,28 +1,25 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   ParseIntPipe,
-  ParseUUIDPipe,
   Post,
   Put,
-  UnauthorizedException,
-  UsePipes,
-  ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
+import { Auth } from 'src/decorators/auth/auth.decorator';
+import { rolUserProtectedEnum } from 'src/enums/rolUser/rolUserProtected.enum';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { RolUserService } from 'src/services/rol-users/rol-user.service';
 
 @Controller('rolUser')
+@Auth()
 export class RolUserController {
   constructor(
     private readonly rolUserService: RolUserService,
@@ -43,6 +40,7 @@ export class RolUserController {
   }
 
   @Get()
+  @Auth(rolUserProtectedEnum.ADMIN)
   async getAll(): Promise<RolUserModel[]> {
     const rols = await this.rolUserService.getAll();
     if (!rols || rols.length === 0) {

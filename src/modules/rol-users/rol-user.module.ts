@@ -3,11 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
 import { RolUserController } from 'src/controllers/rol-users/rol-user.controller';
 import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
-import { GeneralService } from 'src/services/General/general.service';
 import { RolUserService } from 'src/services/rol-users/rol-user.service';
+import { UserModule } from '../users/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RolUserEntity])],
+  imports: [TypeOrmModule.forFeature([RolUserEntity]), UserModule],
   providers: [RolUserService, WinstonLoggerAdapter],
   controllers: [RolUserController],
 })

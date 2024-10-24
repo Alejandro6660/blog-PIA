@@ -1,20 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  SetMetadata,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Auth } from 'src/decorators/auth/auth.decorator';
 import { GetUser } from 'src/decorators/auth/get-user.decorator';
-import {
-  META_ROLES,
-  RolProtected,
-} from 'src/decorators/auth/rol-protected.decorator';
 import { UserEntity } from 'src/entities/users/user.entity';
 import { rolUserProtectedEnum } from 'src/enums/rolUser/rolUserProtected.enum';
-import { UserRolGuardGuard } from 'src/guards/auth/user-rol.guard';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
@@ -46,8 +35,7 @@ export class UserController {
   }
 
   @Get('/test2')
-  @RolProtected(rolUserProtectedEnum.ADMIN)
-  @UseGuards(AuthGuard(), UserRolGuardGuard)
+  @Auth(rolUserProtectedEnum.ADMIN)
   async test2(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
   }

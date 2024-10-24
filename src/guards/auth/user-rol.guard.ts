@@ -12,7 +12,7 @@ import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { UserEntity } from 'src/entities/users/user.entity';
 
 @Injectable()
-export class UserRolGuardGuard implements CanActivate {
+export class UserRolGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
   canActivate(
     context: ExecutionContext,
