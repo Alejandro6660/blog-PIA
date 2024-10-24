@@ -1,8 +1,8 @@
-import { envs } from 'src/config/env.config';
 import * as winston from 'winston';
 import * as fs from 'fs';
 import { warn } from 'console';
 import { LogModel } from 'src/models/logs/log.model';
+import { ConfigService } from '@nestjs/config';
 
 export class WinstonLoggerAdapter {
   private infoLogger: winston.Logger;
@@ -10,12 +10,13 @@ export class WinstonLoggerAdapter {
   private mediumoLogger: winston.Logger;
   private highLogger: winston.Logger;
   private fatalLogger: winston.Logger;
+  private config: ConfigService = new ConfigService();
 
-  private readonly logPath = envs.PATHLOG;
-  private readonly logLowPath = `${envs.PATHLOG}/logs-low.log`;
-  private readonly logMediumPath = `${envs.PATHLOG}/logs-medium.log`;
-  private readonly logHighPath = `${envs.PATHLOG}/logs-high.log`;
-  private readonly logFatalPath = `${envs.PATHLOG}/logs-fatal.log`;
+  private readonly logPath = this.config.get('DIR_LOG');
+  private readonly logLowPath = `${this.config.get('DIR_LOG')}/logs-low.log`;
+  private readonly logMediumPath = `${this.config.get('DIR_LOG')}/logs-medium.log`;
+  private readonly logHighPath = `${this.config.get('DIR_LOG')}/logs-high.log`;
+  private readonly logFatalPath = `${this.config.get('DIR_LOG')}/logs-fatal.log`;
 
   constructor() {
     this.createLogsFiles();

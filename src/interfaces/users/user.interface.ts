@@ -10,5 +10,5 @@ export interface IUser {
   validateEmail: boolean;
   imgAvatar: DocumentEntity;
   imgHero: DocumentEntity;
-  userRoles: RolUserEntity;
+  userRole: RolUserEntity;
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
@@ -12,6 +13,10 @@ import { GeneralService } from '../General/general.service';
 import * as bcrypt from 'bcrypt';
 import { UserModel } from 'src/models/users/User.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
+import { CreateUserModel } from 'src/models/users/Create-User.model';
+import { LoginUserModel } from 'src/models/users/Login-User.model';
+import { IJwtStrategy } from 'src/interfaces/JwtStrategy/IJwtStrategy.interface';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -20,6 +25,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(RolUserEntity)
     private readonly rolUserRepository: Repository<RolUserEntity>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(userModel: RegisterUserModel) {
@@ -29,19 +35,26 @@ export class UserService {
         const user = this.userRepository.create({
           ...userData,
           password: bcrypt.hashSync(password, 10),
-          userRoles: await this.rolUserRepository.findOneBy({ id: BigInt(1) }),
+          userRole: await this.rolUserRepository.findOneBy({ id: BigInt(1) }),
         });
         await this.userRepository.save(user);
 
         const returnUser = new UserModel(
+          user.id,
           user.name,
           user.userName,
           user.lastName,
           user.email,
-          user.userRoles.name,
+          user.userRole.name,
         );
 
-        return returnUser;
+        return {
+          returnUser,
+          token: this.getJwtToken({
+            id: user.id.toString(),
+            userName: user.userName,
+          }),
+        };
       } else {
         throw new BadRequestException('La contrasenia no coincide');
       }
@@ -49,6 +62,63 @@ export class UserService {
       console.log(error);
       this.handleErrorDB(error);
     }
+  }
+
+  async create(userModel: CreateUserModel) {
+    const { password, confirmPassword, userRol, ...userData } = userModel;
+    try {
+      if (this.isPasswordEqual(password, confirmPassword)) {
+        const user = this.userRepository.create({
+          ...userData,
+          password: bcrypt.hashSync(password, 10),
+          userRole: await this.rolUserRepository.findOneBy({
+            id: BigInt(userRol),
+          }),
+        });
+        await this.userRepository.save(user);
+
+        const returnUser = new UserModel(
+          user.id,
+          user.name,
+          user.userName,
+          user.lastName,
+          user.email,
+          user.userRole.name,
+        );
+
+        return {
+          returnUser,
+        };
+      } else {
+        throw new BadRequestException('La contrasenia no coincide');
+      }
+    } catch (error) {
+      this.handleErrorDB(error);
+    }
+  }
+
+  async login(userModel: LoginUserModel) {
+    const { password, email } = userModel;
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: { email: true, password: true, id: true },
+    });
+    if (!user)
+      throw new UnauthorizedException('Credentials are not valids [email]');
+    if (!bcrypt.compareSync(password, user.password))
+      throw new UnauthorizedException('Credentials are not valids [password]');
+    return {
+      ...user,
+      token: this.getJwtToken({
+        id: user.id.toString(),
+        userName: user.userName,
+      }),
+    };
+  }
+
+  private getJwtToken(payload: IJwtStrategy) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 
   private handleErrorDB(error: any): never {

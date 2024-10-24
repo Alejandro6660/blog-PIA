@@ -4,8 +4,8 @@ import { CORS } from './middlewares/cors.middleware';
 import { WinstonLoggerAdapter } from './adapters/winston.adapter';
 import { LogModel } from './models/logs/log.model';
 import { LogSeverity } from './enums/logs/log.enum';
-import { envs } from './config/env.config';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,15 +22,17 @@ async function bootstrap() {
     }),
   );
 
-  const PORT = envs.PORT;
-
   app.enableCors(CORS);
 
   app.setGlobalPrefix('api');
+  const config = new ConfigService();
 
-  await app.listen(PORT);
+  await app.listen(config.get('PORT'));
 
-  const log = new LogModel(`app running in port ${PORT}`, LogSeverity.INFO);
+  const log = new LogModel(
+    `app running in port ${config.get('PORT')}`,
+    LogSeverity.INFO,
+  );
 
   winston.info(log);
 }

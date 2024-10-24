@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { LinkEntity } from './link.entity';
 import { IUser } from '../../interfaces/users/user.interface';
 import { BaseEntity } from '../../common/base.entity';
@@ -27,7 +35,7 @@ export class UserEntity extends BaseEntity implements IUser {
   })
   email: string;
 
-  @Column({ name: 'password', type: 'varchar', nullable: false })
+  @Column({ name: 'password', type: 'varchar', nullable: false, select: false })
   password: string;
 
   @Column({ name: 'description', length: 500, type: 'varchar', nullable: true })
@@ -46,7 +54,7 @@ export class UserEntity extends BaseEntity implements IUser {
 
   @ManyToOne(() => RolUserEntity, { nullable: false })
   @JoinColumn({ name: 'RolId' })
-  userRoles: RolUserEntity;
+  userRole: RolUserEntity;
 
   @OneToMany(() => PostEntity, (post) => post.userCreator)
   posts: PostEntity[];
@@ -59,4 +67,14 @@ export class UserEntity extends BaseEntity implements IUser {
 
   @OneToMany(() => LinkEntity, (link) => link.user)
   link: LinkEntity[];
+
+  @BeforeInsert()
+  checkFieldsBeforeInsert() {
+    this.email = this.email.toLowerCase().trim();
+  }
+
+  @BeforeUpdate()
+  checkFieldsBeforeUpdate() {
+    this.email = this.email.toLowerCase().trim();
+  }
 }
