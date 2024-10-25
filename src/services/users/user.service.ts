@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Delete,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -15,8 +16,13 @@ import { UserModel } from 'src/models/users/User.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
-import { IJwtStrategy } from 'src/interfaces/JwtStrategy/IJwtStrategy.interface';
+import {
+  IJwtCreate,
+  IJwtStrategy,
+} from 'src/interfaces/JwtStrategy/IJwtStrategy.interface';
 import { JwtModule, JwtService } from '@nestjs/jwt';
+import * as jwt from 'jsonwebtoken';
+import { AuthResponse, PayloadToken } from 'src/interfaces/Auth/auth.interface';
 
 @Injectable()
 export class UserService {
@@ -48,13 +54,7 @@ export class UserService {
           user.userRole.name,
         );
 
-        return {
-          returnUser,
-          token: this.getJwtToken({
-            id: user.id.toString(),
-            userName: user.userName,
-          }),
-        };
+        return this.generateJWT(user);
       } else {
         throw new BadRequestException('La contrasenia no coincide');
       }
@@ -97,36 +97,63 @@ export class UserService {
     }
   }
 
-  async login(userModel: LoginUserModel) {
-    const { password, email } = userModel;
+  async login(loginUser: LoginUserModel) {
+    const { email, password } = loginUser;
+
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true },
+      relations: ['userRole'],
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        email: true,
+        password: true,
+        userName: true,
+        userRole: {
+          id: true,
+          name: true,
+          level: true,
+        },
+      },
     });
     if (!user)
       throw new UnauthorizedException('Credentials are not valids [email]');
+
     if (!bcrypt.compareSync(password, user.password))
-      throw new UnauthorizedException('Credentials are not valids [password]');
+      throw new UnauthorizedException(
+        'Incorrect email or password. Please check your details and try again.',
+      );
+
+    return this.generateJWT(user);
+  }
+
+  //?Private functions
+  private async generateJWT(user: UserEntity): Promise<AuthResponse> {
+    const payload: PayloadToken = {
+      sub: user.id.toString(),
+      role: user.userRole.name,
+    };
+
+    const userModel = await new UserModel(
+      user.id,
+      user.name,
+      user.userName,
+      user.lastName,
+      user.email,
+      user.userRole.name,
+    );
+
     return {
-      ...user,
-      token: this.getJwtToken({
-        id: user.id.toString(),
-        userName: user.userName,
+      accessToken: this.signJWT({
+        payload,
       }),
+      user: userModel,
     };
   }
 
-  private getJwtToken(payload: IJwtStrategy) {
-    const token = this.jwtService.sign(payload);
-    return token;
-  }
-
-  private handleErrorDB(error: any): never {
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-
-    throw new InternalServerErrorException(error.detail);
+  private signJWT({ payload }: { payload: jwt.JwtPayload }): string {
+    return this.jwtService.sign(payload);
   }
 
   private isPasswordEqual(password: string, confirmPassword: string): boolean {
@@ -137,5 +164,13 @@ export class UserService {
       isTrue = true;
     }
     return isTrue;
+  }
+
+  private handleErrorDB(error: any): never {
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
+
+    throw new InternalServerErrorException(error.detail);
   }
 }

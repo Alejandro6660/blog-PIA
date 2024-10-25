@@ -1,3 +1,5 @@
+import { IRespuesta } from './IRespuesta.interface';
+
 export interface IGeneral<T, U, P> {
   create(obj: T): Promise<U>;
 
@@ -7,5 +9,5 @@ export interface IGeneral<T, U, P> {
 
   getById(id: number): Promise<U>;
 
-  delete(id: number): Promise<U>;
+  delete(id: number): Promise<IRespuesta>;
 }

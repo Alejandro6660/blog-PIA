@@ -17,7 +17,7 @@ export class UserRolGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const validRoles: string = this.reflector.get(
+    /*     const validLevels: string = this.reflector.get(
       META_ROLES,
       context.getHandler(),
     );
@@ -25,15 +25,22 @@ export class UserRolGuard implements CanActivate {
     const user = req.user as UserEntity;
     const rol = user.userRole as RolUserEntity;
     if (!user) throw new BadRequestException('User not found.');
-    const rolId = rol.id;
-    for (let validRole of validRoles) {
-      if (BigInt(rolId) === BigInt(validRole)) {
-        return true;
-      }
-    }
+    const level = rol.level;
 
+      for (let validRole of validLevels) {
+        if (Number(level) >= ) {
+          return true;
+        }
+      }
     throw new UnauthorizedException(
       'You do not have the required permissions.',
+    ); */
+
+    const isPublic = this.reflector.get<boolean>(
+      META_ROLES,
+      context.getHandler(),
     );
+    console.log(isPublic);
+    return true;
   }
 }

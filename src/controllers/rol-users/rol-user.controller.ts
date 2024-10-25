@@ -12,14 +12,13 @@ import {
 } from '@nestjs/common';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
 import { Auth } from 'src/decorators/auth/auth.decorator';
-import { rolUserProtectedEnum } from 'src/enums/rolUser/rolUserProtected.enum';
+import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { RolUserService } from 'src/services/rol-users/rol-user.service';
 
 @Controller('rolUser')
-@Auth()
 export class RolUserController {
   constructor(
     private readonly rolUserService: RolUserService,
@@ -27,6 +26,7 @@ export class RolUserController {
   ) {}
 
   @Post()
+  @Auth()
   async createUser(@Body() value: CreateRolUserModel): Promise<RolUserModel> {
     const rolUser = await this.rolUserService.create(value);
     return rolUser;
@@ -40,7 +40,6 @@ export class RolUserController {
   }
 
   @Get()
-  @Auth(rolUserProtectedEnum.ADMIN)
   async getAll(): Promise<RolUserModel[]> {
     const rols = await this.rolUserService.getAll();
     if (!rols || rols.length === 0) {
@@ -59,8 +58,9 @@ export class RolUserController {
   }
 
   @Delete(':id')
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<RolUserModel> {
-    const rolUser = this.rolUserService.delete(id);
-    return rolUser;
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<IRespuesta> {
+    const response = await this.rolUserService.delete(id);
+
+    return response;
   }
 }

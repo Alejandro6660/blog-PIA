@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Auth } from 'src/decorators/auth/auth.decorator';
 import { GetUser } from 'src/decorators/auth/get-user.decorator';
 import { UserEntity } from 'src/entities/users/user.entity';
-import { rolUserProtectedEnum } from 'src/enums/rolUser/rolUserProtected.enum';
+import { UserRolGuard } from 'src/guards/auth/user-rol.guard';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
@@ -29,13 +29,13 @@ export class UserController {
   }
 
   @Get('/test')
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), UserRolGuard)
   async test(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
   }
 
   @Get('/test2')
-  @Auth(rolUserProtectedEnum.ADMIN)
+  @Auth()
   async test2(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
   }

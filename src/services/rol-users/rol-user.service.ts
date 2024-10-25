@@ -1,17 +1,17 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { Repository } from 'typeorm';
-import { GeneralService } from '../General/general.service';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { IGeneral } from '../../interfaces/General/IGeneral.interface';
+import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 
 @Injectable()
 export class RolUserService
@@ -21,17 +21,11 @@ export class RolUserService
     @InjectRepository(RolUserEntity)
     private readonly rolUserRepository: Repository<RolUserEntity>,
   ) {}
+
   // #region add RolUser
   async create(body: CreateRolUserModel): Promise<RolUserModel> {
     try {
-      const rolUserCreated = await this.rolUserRepository.create({ ...body });
-      await this.rolUserRepository.save(rolUserCreated);
-      const [error, rolUserModel] = RolUserModel.create({ ...rolUserCreated });
-      if (error) {
-        throw new BadRequestException(error);
-      } else {
-        return rolUserModel;
-      }
+      return;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -42,14 +36,12 @@ export class RolUserService
   //#region getById RolUser
   async getById(id: number): Promise<RolUserModel> {
     try {
-      const roluser = await GeneralService.getById(
-        this.rolUserRepository,
-        BigInt(id),
-      );
-      if (!roluser) throw new BadRequestException(`error`);
-      const [error, rolUserModel] = await RolUserModel.create(roluser);
-      if (error) throw new BadRequestException(error);
-      return rolUserModel;
+      const Id = await BigInt(id);
+      const rol = await this.rolUserRepository.findOneBy({ id: Id });
+      if (!rol) throw new BadRequestException('rol not found');
+      if (rol.isDelated)
+        throw new ForbiddenException('rol are not exist talk a admin');
+      return new RolUserModel(rol.id, rol.name, rol.level);
     } catch (error) {
       throw new InternalServerErrorException(`${error}`);
     }
@@ -71,10 +63,9 @@ export class RolUserService
       }
 
       for (const rolUser of rolUsers) {
-        const [error, rolUserModel] = RolUserModel.create({ ...rolUser });
-
-        if (error) throw new BadRequestException(error);
-        rols.push(rolUserModel); /// Añadimos cada rol al array
+        let rol = new RolUserModel(rolUser.id, rolUser.name, rolUser.level);
+        if (!rol) throw new InternalServerErrorException('Error');
+        rols.push(rol);
       }
 
       return rols; // Retorna un array de instancias de RolUserModel
@@ -87,37 +78,24 @@ export class RolUserService
   //#region update RolUser
   async update(id: number, data: UpdateRolUserModel): Promise<RolUserModel> {
     try {
-      const rolUser = await GeneralService.getById(
-        this.rolUserRepository,
-        BigInt(id),
-      );
-      if (!rolUser) throw new NotFoundException(`Rol not found by id ${id}`);
-      const rol = await this.rolUserRepository.save({
-        ...rolUser,
-        ...data,
-      });
-      const [error, rolUserModel] = await RolUserModel.create({ ...rol });
-      if (error) throw new BadRequestException(error);
-      return rolUserModel;
+      return;
     } catch (error) {
       throw new InternalServerErrorException(`${error}`);
     }
   }
   //#endregion
 
-  async delete(id: number): Promise<RolUserModel> {
+  //#region delete RolUser
+  async delete(id: number): Promise<IRespuesta> {
+    const response: IRespuesta = { ok: false, message: '' };
     try {
       await this.rolUserRepository.update(id, { isDelated: true });
-      const obj = await GeneralService.getById(
-        this.rolUserRepository,
-        BigInt(id),
-      );
-      if (!obj) throw new BadRequestException(`Error`);
-      const [error, rolUserModel] = await RolUserModel.create(obj);
-      if (error) throw new BadRequestException(error);
-      return rolUserModel;
+      response.ok = true;
+      response.message = 'Rol is delated.';
+      return response;
     } catch (error) {
       throw new InternalServerErrorException(`${error}`);
     }
   }
+  //#endregion
 }

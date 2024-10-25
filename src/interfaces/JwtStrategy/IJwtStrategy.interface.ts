@@ -1,4 +1,8 @@
 export interface IJwtStrategy {
   id: string;
-  userName: string;
+  exp: string;
+}
+
+export interface IJwtCreate {
+  id;
 }
