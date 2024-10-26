@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { Observable } from 'rxjs';
 import { META_ROLES } from 'src/decorators/auth/rol-protected.decorator';
 import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { UserEntity } from 'src/entities/users/user.entity';
+import { ROLES } from 'src/enums/rolUser/role.interface';
 
 @Injectable()
 export class UserRolGuard implements CanActivate {
@@ -17,30 +19,29 @@ export class UserRolGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    /*     const validLevels: string = this.reflector.get(
+    const roles: string[] = this.reflector.get(
       META_ROLES,
       context.getHandler(),
     );
+
     const req = context.switchToHttp().getRequest();
     const user = req.user as UserEntity;
-    const rol = user.userRole as RolUserEntity;
-    if (!user) throw new BadRequestException('User not found.');
-    const level = rol.level;
+    const userRole: string = user.userRole.name;
 
-      for (let validRole of validLevels) {
-        if (Number(level) >= ) {
-          return true;
-        }
+    if (roles.length <= 0 || !roles) {
+      return true;
+    }
+
+    if (!user) throw new ForbiddenException('User not found');
+
+    for (const rol of roles) {
+      if (rol === userRole) {
+        return true;
       }
+    }
+
     throw new UnauthorizedException(
       'You do not have the required permissions.',
-    ); */
-
-    const isPublic = this.reflector.get<boolean>(
-      META_ROLES,
-      context.getHandler(),
     );
-    console.log(isPublic);
-    return true;
   }
 }

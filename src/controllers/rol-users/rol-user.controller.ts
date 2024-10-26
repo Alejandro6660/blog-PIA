@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { WinstonLoggerAdapter } from 'src/adapters/winston.adapter';
 import { Auth } from 'src/decorators/auth/auth.decorator';
+import { ROLES } from 'src/enums/rolUser/role.interface';
 import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 import { CreateRolUserModel } from 'src/models/rolUsers/Create-RolUser.model';
 import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
@@ -26,13 +27,16 @@ export class RolUserController {
   ) {}
 
   @Post()
-  @Auth()
-  async createUser(@Body() value: CreateRolUserModel): Promise<RolUserModel> {
+  @Auth(ROLES.ADMIN)
+  async createRolUser(
+    @Body() value: CreateRolUserModel,
+  ): Promise<RolUserModel> {
     const rolUser = await this.rolUserService.create(value);
     return rolUser;
   }
 
   @Get(':id')
+  @Auth(ROLES.ADMIN)
   async getById(@Param('id', ParseIntPipe) id: number): Promise<RolUserModel> {
     const rolUser = await this.rolUserService.getById(id);
     if (!rolUser) throw new InternalServerErrorException('Error');
@@ -40,6 +44,7 @@ export class RolUserController {
   }
 
   @Get()
+  @Auth(ROLES.ADMIN)
   async getAll(): Promise<RolUserModel[]> {
     const rols = await this.rolUserService.getAll();
     if (!rols || rols.length === 0) {
@@ -49,6 +54,7 @@ export class RolUserController {
   }
 
   @Put(':id')
+  @Auth(ROLES.ADMIN)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateRolUserModel,
@@ -58,6 +64,7 @@ export class RolUserController {
   }
 
   @Delete(':id')
+  @Auth(ROLES.ADMIN)
   async delete(@Param('id', ParseIntPipe) id: number): Promise<IRespuesta> {
     const response = await this.rolUserService.delete(id);
 
