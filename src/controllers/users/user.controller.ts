@@ -1,11 +1,16 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { Auth } from 'src/decorators/auth/auth.decorator';
 import { GetUser } from 'src/decorators/auth/get-user.decorator';
-import { RolProtected } from 'src/decorators/auth/rol-protected.decorator';
 import { UserEntity } from 'src/entities/users/user.entity';
 import { ROLES } from 'src/enums/rolUser/role.interface';
-import { UserRolGuard } from 'src/guards/auth/user-rol.guard';
+import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
@@ -21,6 +26,7 @@ export class UserController {
   }
 
   @Post('/create')
+  @Auth(ROLES.ADMIN)
   async createUser(@Body() userModel: CreateUserModel) {
     return await this.userService.create(userModel);
   }
@@ -31,8 +37,7 @@ export class UserController {
   }
 
   @Get('/test')
-  @RolProtected(ROLES.CLIENT)
-  @UseGuards(AuthGuard(), UserRolGuard)
+  @Auth(ROLES.ADMIN)
   async test(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
   }
@@ -41,5 +46,15 @@ export class UserController {
   @Auth()
   async test2(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
+  }
+
+  @Get(':id')
+  @Auth()
+  async getUserById(
+    @GetUser() user: UserEntity,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    console.log('entro');
+    return this.userService.getById(id);
   }
 }

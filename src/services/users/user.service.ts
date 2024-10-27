@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Delete,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -10,22 +9,22 @@ import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { UserEntity } from 'src/entities/users/user.entity';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
 import { Repository } from 'typeorm';
-import { GeneralService } from '../General/general.service';
 import * as bcrypt from 'bcrypt';
 import { UserModel } from 'src/models/users/User.model';
-import { RolUserModel } from 'src/models/rolUsers/RolUser.model';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
-import {
-  IJwtCreate,
-  IJwtStrategy,
-} from 'src/interfaces/JwtStrategy/IJwtStrategy.interface';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken';
 import { AuthResponse, PayloadToken } from 'src/interfaces/Auth/auth.interface';
+import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
+import { UpdateUserModel } from 'src/models/users/update.user.model';
+import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 
 @Injectable()
-export class UserService {
+export class UserService
+  implements IGeneral<CreateUserModel, UserModel, UpdateUserModel>
+{
+  //#region Constructor
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -33,6 +32,36 @@ export class UserService {
     private readonly rolUserRepository: Repository<RolUserEntity>,
     private readonly jwtService: JwtService,
   ) {}
+  //#endregion
+
+  update(id: number, obj: UpdateUserModel): Promise<UserModel> {
+    throw new Error('Method not implemented.');
+  }
+  getAll(): Promise<UserModel[]> {
+    throw new Error('Method not implemented.');
+  }
+  async getById(id: number): Promise<UserModel> {
+    const Id = await BigInt(id);
+    const user = await this.userRepository.findOne({
+      where: { id: Id },
+      relations: ['userRole'],
+    });
+    if (!user) throw new BadRequestException('User not found');
+
+    const returnUser = await new UserModel(
+      user.id,
+      user.name,
+      user.userName,
+      user.lastName,
+      user.email,
+      user.userRole.name,
+    );
+
+    return returnUser;
+  }
+  delete(id: number): Promise<IRespuesta> {
+    throw new Error('Method not implemented.');
+  }
 
   async register(userModel: RegisterUserModel) {
     const { password, confirmPassword, ...userData } = userModel;
@@ -64,7 +93,7 @@ export class UserService {
     }
   }
 
-  async create(userModel: CreateUserModel) {
+  async create(userModel: CreateUserModel): Promise<UserModel> {
     const { password, confirmPassword, userRol, ...userData } = userModel;
     try {
       if (this.isPasswordEqual(password, confirmPassword)) {
@@ -86,9 +115,7 @@ export class UserService {
           user.userRole.name,
         );
 
-        return {
-          returnUser,
-        };
+        return returnUser;
       } else {
         throw new BadRequestException('La contrasenia no coincide');
       }
