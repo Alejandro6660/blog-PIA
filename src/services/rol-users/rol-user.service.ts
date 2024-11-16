@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { UpdateRolUserModel } from 'src/models/rolUsers/Update-RolUser.model';
 import { IGeneral } from '../../interfaces/General/IGeneral.interface';
 import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
+import { CatalogoRolUserModel } from 'src/models/rolUsers/Catalogo-RolUser.model';
 
 @Injectable()
 export class RolUserService
@@ -25,7 +26,8 @@ export class RolUserService
   // #region add RolUser
   async create(body: CreateRolUserModel): Promise<RolUserModel> {
     try {
-      return;
+      const rol = await this.rolUserRepository.save({ ...body });
+      return new RolUserModel(rol.id, rol.name, rol.level);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -51,7 +53,8 @@ export class RolUserService
   //#region getAll RolUsers
   async getAll(): Promise<RolUserModel[]> {
     try {
-      let rols: RolUserModel[] = []; // Array de instancias de RolUserModel
+      let rols: RolUserModel[] = [];
+      // Array de instancias de RolUserModel
       const rolUsers = await this.rolUserRepository.find({
         where: {
           isDelated: false, // Corregido el typo
@@ -88,14 +91,35 @@ export class RolUserService
   //#region delete RolUser
   async delete(id: number): Promise<IRespuesta> {
     const response: IRespuesta = { ok: false, message: '' };
+    const Id = BigInt(id);
     try {
-      await this.rolUserRepository.update(id, { isDelated: true });
+      const rol = await this.rolUserRepository.findOne({
+        where: { id: Id },
+      });
+      if (rol === null) throw new BadRequestException('rol no exist');
+
+      await this.rolUserRepository.save({
+        ...rol,
+        isDelated: true,
+      });
       response.ok = true;
       response.message = 'Rol is delated.';
       return response;
     } catch (error) {
       throw new InternalServerErrorException(`${error}`);
     }
+  }
+
+  async getCatalog(): Promise<CatalogoRolUserModel[]> {
+    const roles = await this.rolUserRepository.find({
+      where: { isDelated: false },
+    });
+
+    if (!roles || roles.length <= 0) {
+      throw new BadRequestException('roles not found');
+    }
+
+    return roles.map((rol) => new CatalogoRolUserModel(rol.id, rol.name));
   }
   //#endregion
 }

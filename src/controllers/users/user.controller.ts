@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Auth } from 'src/decorators/auth/auth.decorator';
 import { GetUser } from 'src/decorators/auth/get-user.decorator';
@@ -14,6 +15,7 @@ import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
+import { UserModel } from 'src/models/users/User.model';
 import { UserService } from 'src/services/users/user.service';
 
 @Controller('user')
@@ -44,17 +46,22 @@ export class UserController {
 
   @Get('/test2')
   @Auth()
-  async test2(@GetUser() user: UserEntity) {
-    return await { ok: true, message: 'Testing jwt', user: user };
+  async test2() {
+    return await { ok: true };
   }
 
   @Get(':id')
-  @Auth()
   async getUserById(
     @GetUser() user: UserEntity,
     @Param('id', ParseIntPipe) id: number,
   ) {
     console.log('entro');
     return this.userService.getById(id);
+  }
+
+  @Get()
+  @Auth(ROLES.ADMIN)
+  async getAll(): Promise<UserModel[]> {
+    return this.userService.getAll();
   }
 }

@@ -8,6 +8,6 @@ import { ROLES } from 'src/enums/rolUser/role.interface';
 export function Auth(...roles: ROLES[]) {
   return applyDecorators(
     RolProtected(...roles),
-    UseGuards(AuthGuard(), UserRolGuard),
+    UseGuards(AuthGuard('jwt'), UserRolGuard),
   );
 }

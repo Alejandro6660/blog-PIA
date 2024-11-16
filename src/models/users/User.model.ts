@@ -1,4 +1,4 @@
-import { RolUserModel } from '../rolUsers/RolUser.model';
+import { CatalogoRolUserModel } from '../rolUsers/Catalogo-RolUser.model';
 
 export class UserModel {
   constructor(
@@ -7,11 +7,12 @@ export class UserModel {
     userName: string,
     lastName: string,
     email: string,
-    rolUser: string,
+    rolUser: CatalogoRolUserModel,
   ) {
     this.id = id;
     this.name = name;
     this.lastName = lastName;
+    this.userName = userName;
     this.email = email;
     this.rolUser = rolUser;
   }
@@ -20,5 +21,5 @@ export class UserModel {
   userName: string;
   lastName: string;
   email: string;
-  rolUser: string;
+  rolUser: CatalogoRolUserModel;
 }

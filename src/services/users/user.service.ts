@@ -19,6 +19,7 @@ import { AuthResponse, PayloadToken } from 'src/interfaces/Auth/auth.interface';
 import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
 import { UpdateUserModel } from 'src/models/users/update.user.model';
 import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
+import { CatalogoRolUserModel } from 'src/models/rolUsers/Catalogo-RolUser.model';
 
 @Injectable()
 export class UserService
@@ -37,9 +38,29 @@ export class UserService
   update(id: number, obj: UpdateUserModel): Promise<UserModel> {
     throw new Error('Method not implemented.');
   }
-  getAll(): Promise<UserModel[]> {
-    throw new Error('Method not implemented.');
+
+  async getAll(): Promise<UserModel[]> {
+    const users = await this.userRepository.find({
+      where: { isDelated: false },
+      relations: ['userRole'],
+      order: { id: 'ASC' }, // Cambia 'ASC' por 'DESC' si quieres orden descendente
+    });
+    if (!users || users.length <= 0) {
+      throw new BadRequestException('Users not found');
+    }
+    return users.map(
+      (user) =>
+        new UserModel(
+          user.id,
+          user.name,
+          user.userName,
+          user.lastName,
+          user.email,
+          new CatalogoRolUserModel(user.userRole.id, user.userRole.name),
+        ),
+    );
   }
+
   async getById(id: number): Promise<UserModel> {
     const Id = await BigInt(id);
     const user = await this.userRepository.findOne({
@@ -48,13 +69,15 @@ export class UserService
     });
     if (!user) throw new BadRequestException('User not found');
 
+    const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
+
     const returnUser = await new UserModel(
       user.id,
       user.name,
       user.userName,
       user.lastName,
       user.email,
-      user.userRole.name,
+      rol,
     );
 
     return returnUser;
@@ -74,15 +97,6 @@ export class UserService
         });
         await this.userRepository.save(user);
 
-        const returnUser = new UserModel(
-          user.id,
-          user.name,
-          user.userName,
-          user.lastName,
-          user.email,
-          user.userRole.name,
-        );
-
         return this.generateJWT(user);
       } else {
         throw new BadRequestException('La contrasenia no coincide');
@@ -96,29 +110,34 @@ export class UserService
   async create(userModel: CreateUserModel): Promise<UserModel> {
     const { password, confirmPassword, userRol, ...userData } = userModel;
     try {
-      if (this.isPasswordEqual(password, confirmPassword)) {
-        const user = this.userRepository.create({
-          ...userData,
-          password: bcrypt.hashSync(password, 10),
-          userRole: await this.rolUserRepository.findOneBy({
-            id: BigInt(userRol),
-          }),
-        });
-        await this.userRepository.save(user);
-
-        const returnUser = new UserModel(
-          user.id,
-          user.name,
-          user.userName,
-          user.lastName,
-          user.email,
-          user.userRole.name,
-        );
-
-        return returnUser;
-      } else {
+      if (!this.isPasswordEqual(password, confirmPassword))
         throw new BadRequestException('La contrasenia no coincide');
-      }
+
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+        userRole: await this.rolUserRepository.findOneBy({
+          id: BigInt(userModel.userRol),
+        }),
+      });
+
+      await this.userRepository.save(user);
+
+      const rol = new CatalogoRolUserModel(
+        user.userRole.id,
+        user.userRole.name,
+      );
+
+      const returnUser = new UserModel(
+        user.id,
+        user.name,
+        user.userName,
+        user.lastName,
+        user.email,
+        rol,
+      );
+
+      return returnUser;
     } catch (error) {
       this.handleErrorDB(error);
     }
@@ -162,13 +181,15 @@ export class UserService
       role: user.userRole.name,
     };
 
+    const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
+
     const userModel = await new UserModel(
       user.id,
       user.name,
       user.userName,
       user.lastName,
       user.email,
-      user.userRole.name,
+      rol,
     );
 
     return {

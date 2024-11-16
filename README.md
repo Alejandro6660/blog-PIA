@@ -80,6 +80,7 @@ DIR_LOG=
 
 #secret jwt
 JWT_SECRET=
+JWT_TIMER=
 ```
 
 3. **Instalar dependencias.**
