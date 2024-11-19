@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -12,6 +13,7 @@ import { GetUser } from 'src/decorators/auth/get-user.decorator';
 import { UserEntity } from 'src/entities/users/user.entity';
 import { ROLES } from 'src/enums/rolUser/role.interface';
 import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
+import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
@@ -50,18 +52,26 @@ export class UserController {
     return await { ok: true };
   }
 
-  @Get(':id')
-  async getUserById(
-    @GetUser() user: UserEntity,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    console.log('entro');
+  @Get('/getByIdAdmin/:id')
+  @Auth(ROLES.ADMIN)
+  async getUserByIdAdmin(@Param('id', ParseIntPipe) id: number) {
     return this.userService.getById(id);
+  }
+
+  @Get('/getById/:id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getByIdClient(id);
   }
 
   @Get()
   @Auth(ROLES.ADMIN)
   async getAll(): Promise<UserModel[]> {
     return this.userService.getAll();
+  }
+
+  @Delete('/delete/:id')
+  @Auth(ROLES.ADMIN)
+  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<IRespuesta> {
+    return this.userService.delete(id);
   }
 }

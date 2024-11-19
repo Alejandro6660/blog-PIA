@@ -20,6 +20,11 @@ import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
 import { UpdateUserModel } from 'src/models/users/update.user.model';
 import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 import { CatalogoRolUserModel } from 'src/models/rolUsers/Catalogo-RolUser.model';
+import { LinkModel } from 'src/models/users/link.model';
+import { GetUserAdmin } from 'src/models/users/Get-User.model';
+import { link } from 'fs';
+import { AuthUserModel } from 'src/models/users/Auth-User.model';
+import { GetClientUserModel } from 'src/models/users/GetClient-User.model';
 
 @Injectable()
 export class UserService
@@ -62,28 +67,117 @@ export class UserService
   }
 
   async getById(id: number): Promise<UserModel> {
-    const Id = await BigInt(id);
+    const Id = BigInt(id);
+
     const user = await this.userRepository.findOne({
-      where: { id: Id },
-      relations: ['userRole'],
+      where: {
+        id: Id,
+      },
+      relations: ['userRole', 'posts', 'link', 'imgAvatar', 'imgHero'],
     });
+
     if (!user) throw new BadRequestException('User not found');
 
     const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
 
-    const returnUser = await new UserModel(
+    const postCount = user.posts.length;
+
+    const links: LinkModel[] = [];
+
+    for (var item of user.link) {
+      const link = new LinkModel(item.id, item.title, item.href, item.icon);
+      links.push(link);
+    }
+
+    const returnUser = new GetUserAdmin(
       user.id,
       user.name,
       user.userName,
       user.lastName,
       user.email,
       rol,
+      postCount,
+      links,
+      user.imgHero !== null ? user.imgHero.formatedTitle : '',
+      user.imgAvatar !== null ? user.imgAvatar.formatedTitle : '',
     );
 
     return returnUser;
   }
-  delete(id: number): Promise<IRespuesta> {
-    throw new Error('Method not implemented.');
+
+  async getByIdClient(id: number): Promise<UserModel> {
+    const Id = BigInt(id);
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: Id,
+      },
+      relations: ['userRole', 'posts', 'link', 'imgAvatar', 'imgHero'],
+    });
+
+    if (!user) throw new BadRequestException('User not found');
+
+    const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
+
+    const postCount = user.posts.length;
+
+    const links: LinkModel[] = [];
+
+    for (var item of user.link) {
+      const link = new LinkModel(item.id, item.title, item.href, item.icon);
+      links.push(link);
+    }
+
+    const returnUser = new GetClientUserModel(
+      user.id,
+      user.name,
+      user.userName,
+      user.lastName,
+      user.email,
+      rol,
+      postCount,
+      links,
+      user.imgHero !== null ? user.imgHero.formatedTitle : '',
+      user.imgAvatar !== null ? user.imgAvatar.formatedTitle : '',
+    );
+
+    return returnUser;
+  }
+
+  async getByIdEntity(idUser: bigint): Promise<UserEntity> {
+    return await this.userRepository.findOne({
+      where: {
+        id: idUser,
+      },
+      relations: ['imgAvatar'],
+    });
+  }
+
+  async delete(id: number): Promise<IRespuesta> {
+    const response: IRespuesta = { ok: false, message: '' };
+
+    const Id = await BigInt(id);
+
+    try {
+      const user = await this.userRepository.findOne({
+        where: {
+          id: Id,
+        },
+      });
+      if (user === null) throw new BadRequestException('rol no exist');
+
+      await this.userRepository.save({
+        ...user,
+        isDelated: true,
+      });
+
+      response.ok = true;
+      response.message = 'user is delated.';
+    } catch (error: any) {
+      throw new InternalServerErrorException(`${error}`);
+    }
+
+    return response;
   }
 
   async register(userModel: RegisterUserModel) {
@@ -148,7 +242,7 @@ export class UserService
 
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['userRole'],
+      relations: ['userRole', 'imgAvatar'],
       select: {
         id: true,
         name: true,
@@ -160,6 +254,9 @@ export class UserService
           id: true,
           name: true,
           level: true,
+        },
+        imgAvatar: {
+          formatedTitle: true,
         },
       },
     });
@@ -183,13 +280,14 @@ export class UserService
 
     const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
 
-    const userModel = await new UserModel(
+    const userModel = new AuthUserModel(
       user.id,
       user.name,
       user.userName,
       user.lastName,
       user.email,
       rol,
+      user.imgAvatar !== null ? user.imgAvatar.formatedTitle : '',
     );
 
     return {

@@ -28,6 +28,6 @@ import { UserService } from 'src/services/users/user.service';
   ],
   providers: [UserService, JwtStrategy],
   controllers: [UserController],
-  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
+  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule, UserService],
 })
 export class UserModule {}
