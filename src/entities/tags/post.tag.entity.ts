@@ -16,5 +16,5 @@ export class PostTagEntity extends BaseEntity {
     { onDelete: 'CASCADE' },
   )
   @JoinColumn({ name: 'tag_id' })
-  tags: TagEntity;
+  tag: TagEntity;
 }

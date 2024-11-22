@@ -15,6 +15,9 @@ import { LikeEntity } from './like.user.post.entity';
 
 @Entity({ name: 'post' })
 export class PostEntity extends BaseEntity implements IPost {
+  @Column({ name: 'title_post', type: 'varchar', nullable: false })
+  titlePost: string;
+
   @Column({ name: 'content_post', type: 'varchar', nullable: false })
   contentPost: string;
 
@@ -27,9 +30,10 @@ export class PostEntity extends BaseEntity implements IPost {
   @OneToMany(() => ComentEntity, (coment) => coment.post)
   coments: ComentEntity[];
 
-  @ManyToMany(() => PostTagEntity, (tag) => tag.post)
+  @OneToMany(() => PostTagEntity, (tag) => tag.post)
   tags: PostTagEntity[];
 
   @OneToMany(() => LikeEntity, (like) => like.post)
+  @JoinColumn({ name: 'id' })
   likes: LikeEntity[];
 }

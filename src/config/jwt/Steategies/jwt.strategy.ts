@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { RolUserEntity } from 'src/entities/rolUsers/rol-user.entity';
 import { UserEntity } from 'src/entities/users/user.entity';
+import { AuthTokenResult, IUseToken } from 'src/interfaces/Auth/auth.interface';
 import { IJwtStrategy } from 'src/interfaces/JwtStrategy/IJwtStrategy.interface';
 import { Repository } from 'typeorm';
 
@@ -20,10 +20,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }
-  async validate(payload: IJwtStrategy): Promise<UserEntity> {
-    const { id, userName } = payload;
+  async validate(payload: AuthTokenResult): Promise<UserEntity> {
+    const expiredDate = new Date();
+    const currentDate: Date = new Date(payload.exp);
 
-    const Id = await BigInt(id);
+    const useToken: IUseToken = {
+      sub: payload.sub,
+      role: payload.role,
+      isExpired: +expiredDate <= +currentDate / 1000,
+    };
+
+    if (useToken.isExpired)
+      throw new UnauthorizedException('Your token is expired.');
+
+    const Id = await BigInt(payload.sub);
     const user = await this.userRepository.findOne({
       where: { id: Id },
       select: {

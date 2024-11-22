@@ -1,26 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-interface Identifiable {
-  id: bigint;
-}
-
 /**
  * This class is a services General
  */
-export class GeneralService {
-  // Definir el generic directamente en la función estática
-  static async getById<T extends Identifiable>(
-    repository: Repository<T>,
-    id: bigint,
-  ): Promise<T | null> {
-    try {
-      const obj = await repository.findOne({
-        where: { id } as FindOptionsWhere<T>,
-      });
-      return obj;
-    } catch (error) {
-      throw new Error(`Internal server error: ${error}`);
-    }
-  }
+export class GeneralService<T> {
+  static async getById(id: bigint) {}
 }

@@ -1,12 +1,23 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Auth } from 'src/decorators/auth/auth.decorator';
 import { GetUser } from 'src/decorators/auth/get-user.decorator';
 import { UserEntity } from 'src/entities/users/user.entity';
-import { rolUserProtectedEnum } from 'src/enums/rolUser/rolUserProtected.enum';
+import { ROLES } from 'src/enums/rolUser/role.interface';
+import { IGeneral } from 'src/interfaces/General/IGeneral.interface';
+import { IRespuesta } from 'src/interfaces/General/IRespuesta.interface';
 import { CreateUserModel } from 'src/models/users/Create-User.model';
 import { LoginUserModel } from 'src/models/users/Login-User.model';
 import { RegisterUserModel } from 'src/models/users/Register-User.model';
+import { UserModel } from 'src/models/users/User.model';
 import { UserService } from 'src/services/users/user.service';
 
 @Controller('user')
@@ -19,6 +30,7 @@ export class UserController {
   }
 
   @Post('/create')
+  @Auth(ROLES.ADMIN)
   async createUser(@Body() userModel: CreateUserModel) {
     return await this.userService.create(userModel);
   }
@@ -29,14 +41,37 @@ export class UserController {
   }
 
   @Get('/test')
-  @UseGuards(AuthGuard())
+  @Auth(ROLES.ADMIN)
   async test(@GetUser() user: UserEntity) {
     return await { ok: true, message: 'Testing jwt', user: user };
   }
 
   @Get('/test2')
-  @Auth(rolUserProtectedEnum.ADMIN)
-  async test2(@GetUser() user: UserEntity) {
-    return await { ok: true, message: 'Testing jwt', user: user };
+  @Auth()
+  async test2() {
+    return await { ok: true };
+  }
+
+  @Get('/getByIdAdmin/:id')
+  @Auth(ROLES.ADMIN)
+  async getUserByIdAdmin(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getById(id);
+  }
+
+  @Get('/getById/:id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getByIdClient(id);
+  }
+
+  @Get()
+  @Auth(ROLES.ADMIN)
+  async getAll(): Promise<UserModel[]> {
+    return this.userService.getAll();
+  }
+
+  @Delete('/delete/:id')
+  @Auth(ROLES.ADMIN)
+  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<IRespuesta> {
+    return this.userService.delete(id);
   }
 }
