@@ -30,9 +30,10 @@ export class PostEntity extends BaseEntity implements IPost {
   @OneToMany(() => ComentEntity, (coment) => coment.post)
   coments: ComentEntity[];
 
-  @ManyToMany(() => PostTagEntity, (tag) => tag.post)
+  @OneToMany(() => PostTagEntity, (tag) => tag.post)
   tags: PostTagEntity[];
 
   @OneToMany(() => LikeEntity, (like) => like.post)
+  @JoinColumn({ name: 'id' })
   likes: LikeEntity[];
 }

@@ -8,6 +8,6 @@ export class TagEntity extends BaseEntity implements ITag {
   @Column({ name: 'name', type: 'varchar', unique: true })
   name: string;
 
-  @OneToMany(() => PostTagEntity, (postHashtag) => postHashtag.tags)
+  @OneToMany(() => PostTagEntity, (postHashtag) => postHashtag.tag)
   postHashtags: PostTagEntity[];
 }

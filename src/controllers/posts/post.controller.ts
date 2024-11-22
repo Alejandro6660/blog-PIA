@@ -17,14 +17,14 @@ import { PostService } from 'src/services/posts/post.service';
 export class PostController {
   constructor(private readonly postServicce: PostService) {}
 
-  @Post('/create')
-  @Auth(ROLES.CLIENT)
-  async createNewPost(
-    @GetUser() user: UserEntity,
-    @Body() createPostModel: CreateNewPostModel,
-  ) {
-    return await this.postServicce.create(createPostModel, user.id);
-  }
+  // @Post('/create')
+  // @Auth(ROLES.CLIENT)
+  // async createNewPost(
+  //   @GetUser() user: UserEntity,
+  //   @Body() createPostModel: CreateNewPostModel,
+  // ) {
+  //   return await this.postServicce.create(createPostModel, user.id);
+  // }
 
   @Get('/getAll')
   async getAllPost() {

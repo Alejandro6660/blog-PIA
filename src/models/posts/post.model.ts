@@ -8,12 +8,16 @@ export class PostModel {
     tags: TagModel[],
     dateCreate: Date,
     userCreator: UserPostModel,
+    commentsCount: number,
+    likesCount: number,
   ) {
     this.id = id;
     this.title = title;
     this.tags = tags;
     this.dateCreate = dateCreate;
     this.userCreator = userCreator;
+    this.commentsCount = commentsCount;
+    this.likesCount = likesCount;
   }
 
   public id: bigint;
@@ -21,4 +25,6 @@ export class PostModel {
   public tags: TagModel[];
   public dateCreate: Date;
   public userCreator: UserPostModel;
+  public commentsCount: number;
+  public likesCount: number;
 }

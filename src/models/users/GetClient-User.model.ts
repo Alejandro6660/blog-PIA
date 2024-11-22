@@ -36,4 +36,5 @@ export class GetClientUserModel {
   links: LinkModel[];
   hero: string;
   avatar: string;
+  commentCount: number;
 }
