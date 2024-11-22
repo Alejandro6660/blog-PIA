@@ -105,43 +105,73 @@ export class UserService
     return returnUser;
   }
 
-  async getByIdClient(id: number): Promise<UserModel> {
-    const Id = BigInt(id);
+  async getByIdClient(id: number): Promise<GetClientUserModel> {
+    const Id = await BigInt(id);
 
-    const user = await this.userRepository.findOne({
-      where: {
-        id: Id,
-      },
-      relations: ['userRole', 'posts', 'link', 'imgAvatar', 'imgHero'],
-    });
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('t1')
+        .where('t1.id = :id', {
+          id: Id,
+        })
+        .select([
+          't1.id as id',
+          't1.name as name',
+          't1.lastname as lastname',
+          't1.userName as username',
+          't1.email as email',
+          `COALESCE(t2.formatedTitle, '') as imgavatar`,
+          `COALESCE(t3.formatedTitle, '') as imghero`,
+          'COUNT(DISTINCT t4.id) AS postCount',
+          'COUNT(DISTINCT t5.id) AS commentsCount',
+          `COALESCE(
+      JSON_AGG(
+        CASE 
+          WHEN t6.id IS NOT NULL THEN JSON_BUILD_OBJECT('id', t6.id, 'title', t6.title, 'icon', t6.icon)
+          ELSE NULL
+        END
+      ) FILTER (WHERE t6.id IS NOT NULL),
+      '[]'
+    ) AS links`,
+        ])
+        .leftJoin('t1.imgAvatar', 't2', 't2.isDelated = :isDelated', {
+          isDelated: false,
+        })
+        .leftJoin('t1.imgHero', 't3', 't3.isDelated = :isDelated', {
+          isDelated: false,
+        })
+        .leftJoin('t1.posts', 't4')
+        .leftJoin('t1.coments', 't5')
+        .leftJoin('t1.link', 't6')
+        .addGroupBy('t1.id')
+        .addGroupBy('t2.id')
+        .addGroupBy('t3.id')
+        .getRawOne();
 
-    if (!user) throw new BadRequestException('User not found');
+      const links: LinkModel[] = [];
 
-    const rol = new CatalogoRolUserModel(user.userRole.id, user.userRole.name);
+      for (var item of user.links) {
+        const link = new LinkModel(item.id, item.title, item.href, item.icon);
+        links.push(link);
+      }
 
-    const postCount = user.posts.length;
+      const returnUser = new GetClientUserModel(
+        user.id,
+        user.name,
+        user.userName,
+        user.lastName,
+        user.email,
+        user.postcount,
+        links,
+        user.imgHero,
+        user.imgavatar,
+        user.commentscount,
+      );
 
-    const links: LinkModel[] = [];
-
-    for (var item of user.link) {
-      const link = new LinkModel(item.id, item.title, item.href, item.icon);
-      links.push(link);
+      return returnUser;
+    } catch (error) {
+      this.handleErrorDB(error);
     }
-
-    const returnUser = new GetClientUserModel(
-      user.id,
-      user.name,
-      user.userName,
-      user.lastName,
-      user.email,
-      rol,
-      postCount,
-      links,
-      user.imgHero !== null ? user.imgHero.formatedTitle : '',
-      user.imgAvatar !== null ? user.imgAvatar.formatedTitle : '',
-    );
-
-    return returnUser;
   }
 
   async getByIdEntity(idUser: bigint): Promise<UserEntity> {
@@ -149,7 +179,7 @@ export class UserService
       where: {
         id: idUser,
       },
-      relations: ['imgAvatar'],
+      relations: ['imgAvatar', 'imgHero', 'link'],
     });
   }
 

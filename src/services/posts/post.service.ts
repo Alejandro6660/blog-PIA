@@ -148,6 +148,73 @@ export class PostService {
     return postsModel;
   }
 
+  async getAllByIdUser(id: number) {
+    const Id = await BigInt(id);
+    const posts = await this.postRepository
+      .createQueryBuilder('t0')
+      .select([
+        't0.id AS IdPost',
+        't0.titlePost AS Title',
+        't0.createdAT AS DateCreate',
+        't1.id AS UserId',
+        't1.name AS name',
+        't1.lastname AS lastname',
+        't1.userName AS userName',
+        't1.email AS email',
+        `COALESCE(t2.formatedTitle, '') AS UserAvatar`,
+        'COUNT(DISTINCT t3.id) AS commentsCount',
+        'COUNT(DISTINCT t4.post_id) AS likesCount',
+        `JSON_AGG(JSON_BUILD_OBJECT('id', t6.id, 'name', t6.name)) AS Tags`,
+      ])
+      .leftJoin('t0.userCreator', 't1')
+      .leftJoin('t1.imgAvatar', 't2')
+      .leftJoin('t0.coments', 't3', 't3.isDelated = :isDelated', {
+        isDelated: false,
+      })
+      .leftJoin('t0.likes', 't4')
+      .leftJoin('t0.tags', 't5')
+      .innerJoin('t5.tag', 't6')
+      .groupBy('t0.id')
+      .addGroupBy('t1.id')
+      .addGroupBy('t2.formatedTitle')
+      .orderBy('t0.createdAT', 'DESC')
+      .where('t1.id = :id', {
+        id: Id,
+      })
+      .getRawMany();
+
+    const postsModel: PostModel[] = [];
+    posts.forEach((post) => {
+      let userModel = new UserPostModel(
+        post.userid,
+        post.name,
+        post.lastname,
+        post.username,
+        post.email,
+        post.useravatar,
+      );
+
+      let tags: TagModel[] = [];
+      post.tags.forEach((tag) => {
+        let tagModel = new TagModel(tag.id, tag.name);
+        tags.push(tagModel);
+      });
+
+      let postModel = new PostModel(
+        post.idpost,
+        post.title,
+        tags,
+        post.datecreate,
+        userModel,
+        post.commentscount,
+        post.likescount,
+      );
+
+      postsModel.push(postModel);
+    });
+    return postsModel;
+  }
+
   /*   async getAllPost() {
     const posts = await this.postRepository.find({
       where: {
@@ -201,7 +268,7 @@ export class PostService {
       where: {
         id: Id,
       },
-      relations: ['userCreator', 'userCreator.imgAvatar'],
+      relations: ['userCreator', 'userCreator.imgAvatar', 'coments'],
     });
 
     const tags = await this.postTag.find({

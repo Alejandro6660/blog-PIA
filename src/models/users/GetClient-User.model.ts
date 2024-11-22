@@ -8,22 +8,23 @@ export class GetClientUserModel {
     userName: string,
     lastName: string,
     email: string,
-    rolUser: CatalogoRolUserModel,
     postCount: number,
     links: LinkModel[],
     hero: string,
     avatar: string,
+    commentCount: number,
   ) {
     this.id = id;
     this.name = name;
     this.userName = userName;
     this.lastName = lastName;
     this.email = email;
-    this.rolUser = rolUser;
     this.postCount = postCount;
     this.links = links;
     this.hero = hero;
     this.avatar = avatar;
+    this.avatar = avatar;
+    this.commentCount = commentCount;
   }
 
   id: bigint;
@@ -31,7 +32,6 @@ export class GetClientUserModel {
   userName: string;
   lastName: string;
   email: string;
-  rolUser: CatalogoRolUserModel;
   postCount: number;
   links: LinkModel[];
   hero: string;

@@ -31,6 +31,11 @@ export class PostController {
     return await this.postServicce.getAllPost();
   }
 
+  @Get('/getAllByUser/:id')
+  async getAllPostByUser(@Param('id', ParseIntPipe) id: number) {
+    return await this.postServicce.getAllByIdUser(id);
+  }
+
   @Get('/getById/:id')
   async getById(@Param('id', ParseIntPipe) id: number) {
     return await this.postServicce.getById(id);
